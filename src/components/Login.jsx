@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import axios from 'axios'; // Import axios
+import axios from 'axios';
 import img from "./img/medicines.jpg";
 
 const LoginForm = ({ onLogin, onForgotPassword, passwordResetShown, newPassword, onSignup }) => {
@@ -144,7 +144,6 @@ const SuccessfulLogin = ({ username }) => {
         </>
     );
 };
-
 
 const ResetPasswordForm = ({ onResetPassword, onCancel }) => {
     const [newPassword, setNewPassword] = useState('');
