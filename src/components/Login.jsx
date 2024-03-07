@@ -1,9 +1,6 @@
-import React, { useRef, useState } from 'react';
-import one from "./img/Abacavir.jpg";
-import two from "./img/eltromag.jpg";
-import three from "./img/meloxicam.jpg";
-import four from "./img/allopurinol.jpg";
-import five from "./img/phenytoin.jpg";
+import React, { useRef, useState, useEffect } from 'react';
+import axios from 'axios'; // Import axios
+import img from "./img/medicines.jpg";
 
 const LoginForm = ({ onLogin, onForgotPassword, passwordResetShown, newPassword, onSignup }) => {
     const [username, setUsername] = useState('');
@@ -56,72 +53,43 @@ const LoginForm = ({ onLogin, onForgotPassword, passwordResetShown, newPassword,
 };
 
 const SuccessfulLogin = ({ username }) => {
+    const [data, setData] = useState([]);
+    const nameRef = useRef();
+    const quantityRef = useRef();
+    const priceRef = useRef();
+    const expiryRef = useRef();
 
-    let id = useRef()
-    let name = useRef()
-    let quantity = useRef()
-    let price = useRef()
-    let expiry = useRef()
-    const [data, setdata] = useState([
-        {
-            id: 101,
-            img: one,
-            name: 'Abacavir',
-            quantity: 25,
-            price: 150,
-            expiry: 2022
-        },
-        {
-            id: 102,
-            img: two,
-            name: 'Eltrombopag',
-            quantity: 90,
-            price: 550,
-            expiry: 2021
-        },
-        {
-            id: 103,
-            img: three,
-            name: 'Meloxicam',
-            quantity: 85,
-            price: 450,
-            expiry: 2025
-        },
-        {
-            id: 104,
-            img: four,
-            name: 'Allopurinol',
-            quantity: 50,
-            price: 600,
-            expiry: 2023
-        },
-        {
-            id: 105,
-            img: five,
-            name: 'Phenytoin',
-            quantity: 63,
-            price: 250,
-            expiry: 2021
-        },
-    ]);
+    useEffect(() => {
+        fetchData();
+    }, []);
 
-    let submit = () => {
-        let user = {
-            img: three,
-            id: id.current.value,
-            name: name.current.value,
-            quantity: quantity.current.value,
-            price: price.current.value,
-            expiry: expiry.current.value,
-        }
+    const fetchData = () => {
+        axios.get("http://localhost:3001/post").then((res) => {
+            setData(res.data);
+        });
+    };
 
-        setdata([...data, user])
-    }
+    const handleSubmit = () => {
+        const newData = {
+            name: nameRef.current.value,
+            quantity: quantityRef.current.value,
+            price: priceRef.current.value,
+            expiry: expiryRef.current.value,
+        };
 
-    let deleteData = (id) => {
-        console.log(id);
-        setdata(data.filter((val) => val.id !== id))
-    }
+        axios.post("http://localhost:3001/post", newData).then((res) => {
+            setData([...data, res.data]);
+        });
+    };
+
+    const deleteData = (id) => {
+        axios.delete(`http://localhost:3001/post/${id}`).then(() => {
+            setData(data.filter((val) => val.id !== id));
+        }).catch(error => {
+            console.error("Error deleting data:", error);
+        });
+    };
+
     const [selectedCard, setSelectedCard] = useState(null);
     const viewCardDetails = (id) => {
         setSelectedCard(selectedCard === id ? null : id);
@@ -137,32 +105,22 @@ const SuccessfulLogin = ({ username }) => {
                         </div>
                     </div>
                 </div>
-                <div className="row my-4">
-                    <div className="col-md-2">
-                        <input type="number" className="form-control" placeholder="Enter id" ref={id} />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="text" className="form-control" placeholder="Enter name" ref={name} />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="number" className="form-control" placeholder="Enter quantity" ref={quantity} />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="number" className="form-control" placeholder="Enter price" ref={price} />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="number" className="form-control" placeholder="Enter expiry" ref={expiry} />
-                    </div>
-                    <div className="col-md-2">
-                        <button onClick={submit} className="btn btn-success">Add New Item</button>
+                <div className="row">
+                    <div className="d-flex">
+                        <input type="text" className="form-control me-2 h-100" placeholder="Enter name" ref={nameRef} />
+                        <input type="number" className="form-control me-2 h-100" placeholder="Enter quantity" ref={quantityRef} />
+                        <input type="number" className="form-control me-2 h-100" placeholder="Enter price" ref={priceRef} />
+                        <input type="number" className="form-control me-2 h-100" placeholder="Enter expiry" ref={expiryRef} />
+                        <button onClick={handleSubmit} className="btn btn-success h-100 w-100">Add New Card</button>
                     </div>
                 </div>
+
             </div>
             <div className="row">
                 {data.map((val) => (
                     <div key={val.id} className='col-md-3'>
                         <div className="card mt-3 shadow">
-                            <img src={val.img} className="card-img-top" alt={val.name} style={{ height: '200px', objectFit: 'cover' }} />
+                            <img src={img} className="card-img-top" alt={val.name} style={{ height: '200px', objectFit: 'cover' }} />
                             <div className="card-body">
                                 <h5 className="card-title mb-2">ID :- {val.id}</h5>
                                 <h5 className="card-title mb-2">Name :- {val.name}</h5>
@@ -185,8 +143,8 @@ const SuccessfulLogin = ({ username }) => {
             </div>
         </>
     );
-
 };
+
 
 const ResetPasswordForm = ({ onResetPassword, onCancel }) => {
     const [newPassword, setNewPassword] = useState('');
@@ -205,7 +163,7 @@ const ResetPasswordForm = ({ onResetPassword, onCancel }) => {
                             <h2 className="card-title text-center">Forgot Password</h2>
                         </div>
                         <div className="card-body">
-                        <label>Enter your new password :-</label>
+                            <label>Enter your new password :-</label>
                             <input type="password" className="form-control my-3" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
                         </div>
                         <div className="card-footer text-center">
@@ -240,7 +198,7 @@ const SignupForm = ({ onSignup }) => {
                             <h2 className="card-title text-center">Sign Up</h2>
                         </div>
                         <div className="card-body">
-                        <label>Username :-</label>
+                            <label>Username :-</label>
                             <input type="text" className="form-control my-2" value={username} onChange={(e) => setUsername(e.target.value)} />
                             <label>Password :-</label>
                             <input type="password" className="form-control mt-2" value={password} onChange={(e) => setPassword(e.target.value)} />
@@ -277,48 +235,7 @@ const Login = () => {
     const [newPassword, setNewPassword] = useState('');
     const [showSignup, setShowSignup] = useState(false);
     const [showSignupConfirmation, setShowSignupConfirmation] = useState(false);
-    const [medicineData, setMedicineData] = useState([
-        {
-            id: 101,
-            img: one,
-            name: 'Abacavir',
-            quantity: 25,
-            name: 150,
-            expiry: 2022
-        },
-        {
-            id: 102,
-            img: two,
-            name: 'Eltrombopag',
-            quantity: 90,
-            name: 550,
-            expiry: 2021
-        },
-        {
-            id: 103,
-            img: three,
-            name: 'Meloxicam',
-            quantity: 85,
-            name: 450,
-            expiry: 2025
-        },
-        {
-            id: 104,
-            img: four,
-            name: 'Allopurinol',
-            quantity: 50,
-            name: 600,
-            expiry: 2023
-        },
-        {
-            id: 105,
-            img: five,
-            name: 'Phenytoin',
-            quantity: 63,
-            name: 250,
-            expiry: 2021
-        },
-    ]);
+    const [medicineData, setMedicineData] = useState([]);
 
     const handleLogin = (username, password) => {
         console.log('Logging in with:', "Username :-", username, " Password :-", password);
@@ -344,18 +261,18 @@ const Login = () => {
         setShowLogin(false);
     };
 
-    const handleAddNewItem = (newItem) => {
-        setMedicineData([...medicineData, newItem]);
+    const handleAddNewval = (newval) => {
+        setMedicineData([...medicineData, newval]);
     };
 
-    const handleDeleteItem = (id) => {
-        setMedicineData(medicineData.filter((item) => item.id !== id));
+    const handleDeleteval = (id) => {
+        setMedicineData(medicineData.filter((val) => val.id !== id));
     };
 
     return (
         <div className="container-fluid">
             {showLogin && !loggedIn && <LoginForm onLogin={handleLogin} onForgotPassword={() => setShowResetPassword(true)} passwordResetShown={showResetPassword} newPassword={newPassword} onSignup={toggleSignupForm} />}
-            {loggedIn && !showSignupConfirmation && <SuccessfulLogin username={loggedInUsername} onAddNewItem={handleAddNewItem} onDeleteItem={handleDeleteItem} />}
+            {loggedIn && !showSignupConfirmation && <SuccessfulLogin username={loggedInUsername} onAddNewval={handleAddNewval} onDeleteval={handleDeleteval} />}
             {showResetPassword && <ResetPasswordForm onResetPassword={handleResetPassword} onCancel={() => setShowResetPassword(false)} />}
             {showSignup && <SignupForm onSignup={handleSignup} />}
             {showSignupConfirmation && <SignupConfirmation username={loggedInUsername} />}
